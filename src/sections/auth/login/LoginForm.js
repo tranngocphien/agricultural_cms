@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// @mui
-import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { Link, Stack, IconButton, InputAdornment, TextField, Box } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-// components
 import Iconify from '../../../components/iconify';
+import axios from '../../../data/httpCommon';
 
 // ----------------------------------------------------------------------
 
@@ -13,18 +12,34 @@ export default function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleClick = () => {
-    navigate('/dashboard', { replace: true });
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('/api/auth/login', formData);
+      localStorage.setItem('token', response.data.data.token);
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField name="username" label="Tên tài khoản" onChange={handleChange} />
 
         <TextField
           name="password"
-          label="Password"
+          label="Mật khẩu"
+          onChange={handleChange}
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (
@@ -37,15 +52,9 @@ export default function LoginForm() {
           }}
         />
       </Stack>
+      <Box sx={{ m: 2 }} />
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-        <Checkbox name="remember" label="Remember me" />
-        <Link variant="subtitle2" underline="hover">
-          Forgot password?
-        </Link>
-      </Stack>
-
-      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleLogin}>
         Login
       </LoadingButton>
     </>

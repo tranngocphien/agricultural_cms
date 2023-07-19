@@ -35,3 +35,11 @@ function result(format, key = '.00') {
 
   return isInteger ? format.replace(key, '') : format;
 }
+
+export function formatCurrency(number) {
+  const parts = number.toFixed(0).toString().split('.');
+  const integerPart = parts[0];
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts[1] ? `.${parts[1]}` : '';
+  return `${formattedInteger}${decimalPart} đ`;
+}

@@ -19,10 +19,10 @@ import {
   TablePagination,
 } from '@mui/material';
 import Iconify from '../components/iconify';
+import Label from '../components/label';
 import Scrollbar from '../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import axios from '../data/httpCommon';
-
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID người dùng', alignRight: false },
@@ -31,8 +31,8 @@ const TABLE_HEAD = [
   { id: 'phoneNumber', label: 'Số điện thoại', alignRight: false },
   { id: 'firstName', label: 'Tên', alignRight: false },
   { id: 'firstName', label: 'Họ', alignRight: false },
+  { id: 'roles', label: 'Quyền', alignRight: false },
 ];
-
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -78,7 +78,6 @@ export default function UserPage() {
 
   const [users, setUsers] = useState([]);
 
-
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -94,14 +93,11 @@ export default function UserPage() {
   };
 
   useEffect(() => {
-    axios
-      .get(`/api/admin/users?page=${page}&size=${rowsPerPage}`, )
-      .then((response) => {
-        setUsers(response.data.data);
-        console.log(response);
-      } );
+    axios.get(`/api/admin/users?page=${page}&size=${rowsPerPage}`).then((response) => {
+      setUsers(response.data.data);
+      console.log(response);
+    });
   }, []);
-
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -166,10 +162,13 @@ export default function UserPage() {
 
                         <TableCell align="left">{phoneNumber}</TableCell>
 
-                        <TableCell align="left">{firstName}
-                        </TableCell>
-                        
-                        <TableCell align="left">{lastName}
+                        <TableCell align="left">{firstName}</TableCell>
+
+                        <TableCell align="left">{lastName}</TableCell>
+                        <TableCell align="left">
+                          {row.roles.map((role) => {
+                            return (<Label>{role.name}</Label>)
+                          })}
                         </TableCell>
                       </TableRow>
                     );
@@ -219,35 +218,6 @@ export default function UserPage() {
           />
         </Card>
       </Container>
-
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
     </>
   );
 }

@@ -5,7 +5,7 @@ import {
   Table,
   Stack,
   Paper,
-  Popover,
+  Select,
   TableRow,
   MenuItem,
   TableBody,
@@ -15,12 +15,21 @@ import {
   Typography,
   TableContainer,
   TablePagination,
+  DialogTitle,
+  Button,
 } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import Iconify from '../../components/iconify';
+import Label from '../../components/label';
 import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
+import { ProductList } from '../../sections/@dashboard/products';
 import axios from '../../data/httpCommon';
-
+import { formatCurrency } from '../../utils/formatNumber';
+import { formatImageUrl } from '../../utils/formatUrl';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'Mã đơn hàng', alignRight: false },
@@ -31,7 +40,6 @@ const TABLE_HEAD = [
   { id: 'phoneNumber', label: 'Số điện thoại', alignRight: false },
   { id: 'status', label: 'Trạng thái', alignRight: false },
 ];
-
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -63,6 +71,12 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function OrderPage() {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [newsStatus, setNewsStatus] = useState('IDLE');
+
+  const [openDetail, setOpenDetail] = useState(false);
+
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -77,6 +91,9 @@ export default function OrderPage() {
 
   const [orders, setOrders] = useState([]);
 
+  const handleCloseDetail = (event) => {
+    setOpenDetail(false);
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -93,14 +110,12 @@ export default function OrderPage() {
   };
 
   useEffect(() => {
-    axios
-      .get(`/api/admin/orders?page=${page}&size=${rowsPerPage}`, )
-      .then((response) => {
-        setOrders(response.data.data);
-        console.log(response);
-      } );
+    axios.get(`/api/admin/orders?page=${page}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      setSelectedOrder(response.data.data[0]);
+      console.log(response);
+    });
   }, []);
-
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -115,6 +130,40 @@ export default function OrderPage() {
     setPage(0);
     setFilterName(event.target.value);
   };
+
+  const handleDetailOrder = (event, order) => {
+    setSelectedOrder(order);
+    setNewsStatus(order.status);
+    setOpenDetail(true);
+  };
+
+  const updateStatus = async () => {
+    try {
+      axios
+        .post('/api/orders/updateStatus', {
+          id: selectedOrder.id,
+          status: newsStatus
+        })
+        .then((response) => {
+          console.log(response.data);
+          setOpenDetail(false);
+          reloadOrders();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    } 
+  };
+
+  const reloadOrders = async () => {
+    axios.get(`/api/admin/orders?page=${page}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      setSelectedOrder(response.data.data[0]);
+      console.log(response);
+    });
+  }
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage) : 0;
 
@@ -136,33 +185,37 @@ export default function OrderPage() {
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
-              <TableHead>
-                <TableRow>
+                <TableHead>
+                  <TableRow>
                     {TABLE_HEAD.map((headCell) => (
-                    <TableCell
+                      <TableCell
                         key={headCell.id}
                         align={headCell.alignRight ? 'right' : 'left'}
                         sortDirection={orderBy === headCell.id ? order : false}
-                    >
+                      >
                         {headCell.label}
-                    </TableCell>
+                      </TableCell>
                     ))}
-                </TableRow>
+                  </TableRow>
                 </TableHead>
                 <TableBody>
                   {orders.map((row) => {
                     const { id, username, shippingFee, amount, firstName, lastName } = row;
+                    const statusColor = getStatusColor(row.status);
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox">
+                      <TableRow hover key={id} tabIndex={-1}>
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">{row.owner.username}</TableCell>
-                        <TableCell align="left">{amount}</TableCell>
-                        <TableCell align="left">{shippingFee}</TableCell>
+                        <TableCell align="left">{formatCurrency(amount)}</TableCell>
+                        <TableCell align="left">{formatCurrency(shippingFee)}</TableCell>
                         <TableCell align="left">{row.shippingAddress.address}</TableCell>
-                      
                         <TableCell align="left">{row.shippingAddress.phoneNumber}</TableCell>
-                        <TableCell align="left">{row.status}</TableCell>
-
+                        <TableCell align="left">
+                          <Label color={statusColor}>{row.status}</Label>
+                        </TableCell>
+                        <TableCell align="left" onClick={(event) => handleDetailOrder(event, row)}>
+                          <Label color="info">Chi tiết</Label>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -212,34 +265,134 @@ export default function OrderPage() {
         </Card>
       </Container>
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
+      {orders.length > 0 && selectedOrder != null && (
+        <Dialog open={openDetail} onClose={handleCloseDetail} fullWidth="true">
+          <DialogTitle>Thông tin đơn hàng</DialogTitle>
+          <Stack padding={2} spacing={2}>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Thông tin người đặt hàng
+              </Typography>
+              <Stack alignItems={'center'} direction={'row'} spacing={2}>
+                <img
+                  src={formatImageUrl(selectedOrder.owner.avatar)}
+                  alt="avatar"
+                  loading="lazy"
+                  style={{
+                    height: 50,
+                    width: 50,
+                    borderRadius: 50,
+                  }}
+                />
+                <Typography variant="h6">{selectedOrder.owner.username}</Typography>
+              </Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Sản phẩm
+              </Typography>
+              <Stack>
+                {selectedOrder.items.map((item) => {
+                  const product = item.product;
+                  return (
+                    <Stack direction={'row'} spacing={2}>
+                      <Stack>
+                        <Typography variant="h6">{product.name}</Typography>
+                        <Typography>{`${item.quantity}x ${formatCurrency(product.price)}/${product.sku}`}</Typography>
+                      </Stack>
+                      <img
+                        src={formatImageUrl(product.images[0])}
+                        alt="avatar"
+                        loading="lazy"
+                        style={{
+                          height: 80,
+                          width: 100,
+                        }}
+                      />
+                    </Stack>
+                  );
+                })}
+              </Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Phí vận chuyển
+              </Typography>
+              <Stack>{formatCurrency(selectedOrder.shippingFee)}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Tổng đơn hàng
+              </Typography>
+              <Stack>{formatCurrency(selectedOrder.amount)}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Phương thức thanh toán
+              </Typography>
+              <Stack>{selectedOrder.paymentType.name}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Địa chỉ nhận hàng
+              </Typography>
+              <Stack>{selectedOrder.shippingAddress.address}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Thông tin người nhận
+              </Typography>
+              <Stack>{selectedOrder.shippingAddress.name}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Số điện thoại người nhận
+              </Typography>
+              <Stack>{selectedOrder.shippingAddress.phoneNumber}</Stack>
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Trạng thái
+              </Typography>
+              <Select
+                width={200}
+                value={newsStatus}
+                onChange={(event) => {
+                  setNewsStatus(event.target.value);
+                }}
+              >
+                <MenuItem value={'IDLE'}>IDLE</MenuItem>
+                <MenuItem value={'CONFIRMED'}>CONFIRMED</MenuItem>
+                <MenuItem value={'DELIVERED'}>DELIVERED</MenuItem>
+                <MenuItem value={'CANCELLED'}>CANCELLED</MenuItem>
+              </Select>
+            </Stack>
+          </Stack>
+          <DialogActions>
+            <Button variant="contained" color="inherit" onClick={handleCloseDetail}>
+              Hủy
+            </Button>
+            <Button variant="contained" color="info" onClick = {updateStatus}>
+              Cập nhật
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
+}
+
+function getStatusColor(status) {
+  switch (status) {
+    case 'IDLE':
+      return 'info';
+    case 'CONFIRMED':
+      return 'secondary';
+    case 'DELIVERED':
+      return 'success';
+    case 'CANCELLED':
+      return 'error';
+    default:
+      return 'default';
+  }
 }

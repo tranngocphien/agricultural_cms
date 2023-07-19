@@ -5,6 +5,7 @@ import SimpleLayout from './layouts/simple';
 //
 import BlogPage from './pages/BlogPage';
 import UserPage from './pages/UserPage';
+import SupplierPage from './pages/supplier/SupplierPage';
 import OrderPage from './pages/order/OrderPage';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
@@ -21,12 +22,17 @@ import PurchaseOrderPage from './pages/purchase_order/PurchaseOrderPage';
 export default function Router() {
   const routes = useRoutes([
     {
+      element: <Navigate to="login" />,
+      index: true,
+    },
+    {
       path: '/dashboard',
       element: <DashboardLayout />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
+        { path: 'supplier', element: <SupplierPage/>},
         { path: 'products', element: <ProductsPage /> },
         { path: 'orders', element: <OrderPage /> },
         { path: 'purchaseOrders', element: <PurchaseOrderPage /> },

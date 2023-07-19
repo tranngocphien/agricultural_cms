@@ -3,6 +3,7 @@ import { Box, Card, Link, Typography, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import {formatImageUrl} from '../../../utils/formatUrl';
+import {formatCurrency} from "../../../utils/formatNumber";
 
 const StyledProductImg = styled('img')({
   top: 0,
@@ -42,7 +43,7 @@ export default function ShopProductCard({ product }) {
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="subtitle1">{price}</Typography>
+          <Typography variant="subtitle1">{formatCurrency(price)}</Typography>
         </Stack>
       </Stack>
     </Card>

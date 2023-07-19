@@ -10,17 +10,38 @@ import {
   MenuItem,
   TableBody,
   TableCell,
+  TextField,
   TableHead,
   Container,
   Typography,
   TableContainer,
   TablePagination,
+  Select,
+  Button,
+  Dialog,
+  ImageList,
+  ImageListItem,
+  DialogActions,
+  DialogTitle,
 } from '@mui/material';
 import Iconify from '../../components/iconify';
+import Label from '../../components/label';
 import Scrollbar from '../../components/scrollbar';
+import { formatCurrency } from '../../utils/formatNumber';
+import { fDateTime, fDate  } from '../../utils/formatTime';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import axios from '../../data/httpCommon';
+import { formatImageUrl } from '../../utils/formatUrl';
 
+
+const dateStyle = {
+  height: '3rem',
+  fontSize: '18px',
+  backgroundColor: 'info',
+  border: '1px solid #d4d9d6',
+  borderRadius: 4,
+  padding: 16,
+};
 
 const TABLE_HEAD = [
   { id: 'id', label: 'Mã đơn hàng', alignRight: false },
@@ -30,7 +51,6 @@ const TABLE_HEAD = [
   { id: 'harvestDay', label: 'Ngày nhận', alignRight: false },
   { id: 'preice', label: 'Giá', alignRight: false },
 ];
-
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -62,6 +82,10 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function PurchaseOrderPage() {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [openDetail, setOpenDetail] = useState(false);
+
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -76,6 +100,22 @@ export default function PurchaseOrderPage() {
 
   const [orders, setOrders] = useState([]);
 
+  const [formData, setFormData] = useState({
+    id: 0,
+    price: 0,
+    amount: 0,
+    note: '',
+    status: 'IDLE',
+    harvestAt: new Date(),
+  });
+
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const handleCloseDetail = (event) => {
+    setOpenDetail(false);
+  };
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -91,15 +131,46 @@ export default function PurchaseOrderPage() {
     setOrderBy(property);
   };
 
+  const handleDetailOrder = (event, order) => {
+    setSelectedOrder(order);
+    formData.id = order.id;
+    formData.amount = order.amount;
+    formData.price = order.price;
+    formData.note = order.note;
+    formData.harvestAt = order.harvestAt;
+    setOpenDetail(true);
+  };
+
   useEffect(() => {
-    axios
-      .get(`/api/admin/purchaseOrders?page=${page}&size=${rowsPerPage}`, )
-      .then((response) => {
-        setOrders(response.data.data);
-        console.log(response);
-      } );
+    axios.get(`/api/admin/purchaseOrders?page=${page}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      console.log(response);
+    });
   }, []);
 
+  const updatePurchaseOrder = async () => {
+    try {
+      axios
+        .post('/api/purchase-orders/update', formData)
+        .then((response) => {
+          console.log(response.data);
+          setOpenDetail(false);
+          reloadOrders();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    } 
+  };
+
+  const reloadOrders = async () => {
+    axios.get(`/api/admin/purchaseOrders?page=${page}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      console.log(response);
+    });
+  }
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -135,42 +206,39 @@ export default function PurchaseOrderPage() {
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
-              <TableHead>
-                <TableRow>
+                <TableHead>
+                  <TableRow>
                     {TABLE_HEAD.map((headCell) => (
-                    <TableCell
+                      <TableCell
                         key={headCell.id}
                         align={headCell.alignRight ? 'right' : 'left'}
                         sortDirection={orderBy === headCell.id ? order : false}
-                    >
+                      >
                         {headCell.label}
-                    </TableCell>
+                      </TableCell>
                     ))}
-                </TableRow>
+                  </TableRow>
                 </TableHead>
                 <TableBody>
                   {orders.map((row) => {
                     const { id, username, shippingFee, amount, firstName, lastName } = row;
+                    const statusColor = getStatusColor(row.status);
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox">
                         <TableCell component="th" scope="row" padding="10">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
-                              {id}
-                            </Typography>
-                          </Stack>
+                          {row.id}
                         </TableCell>
-
                         <TableCell align="left">{row.supplierProduct.productName}</TableCell>
-
                         <TableCell align="left">{row.amount}</TableCell>
-
-                        <TableCell align="left">{row.status}
+                        <TableCell align="left">
+                          <Label color={statusColor}>{row.status}</Label>
                         </TableCell>
-                        
-                        <TableCell align="left">{row.harvestAt}</TableCell>
-                        <TableCell align="left">{row.price}</TableCell>
 
+                        <TableCell align="left">{fDateTime(row.harvestAt, 'dd/MM/yyyy')}</TableCell>
+                        <TableCell align="left">{formatCurrency(row.price)}</TableCell>
+                        <TableCell align="left" onClick={(event) => handleDetailOrder(event, row)}>
+                          <Label color="info">Chi tiết</Label>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -220,34 +288,69 @@ export default function PurchaseOrderPage() {
         </Card>
       </Container>
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
+      {orders.length > 0 && selectedOrder != null && (
+        <Dialog open={openDetail} onClose={handleCloseDetail} fullWidth="true">
+          <DialogTitle>Thông tin đơn mua hàng</DialogTitle>
+          <Stack padding={2} spacing={2}>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Thông tin sản phẩm
+              </Typography>
+              <Stack direction={'column'} spacing={2}>
+                <Typography variant="h6">{selectedOrder.supplierProduct.productName}</Typography>
+                <ImageList sx={{ width: 300 }} cols={3} rowHeight={100}>
+                  {selectedOrder.supplierProduct.images.map((item) => (
+                    <ImageListItem key={item}>
+                      <img src={formatImageUrl(item)} alt="" loading="lazy" />
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              </Stack>
+            </Stack>
+            <TextField name="amount" label="Số lượng" onChange={handleChange} value={formData.amount} />
+            <TextField name="price" fullWidth label="Giá tiền" onChange={handleChange} value={formData.price}  />
+            <TextField name="note" fullWidth multiline rows={5} label="Ghi chú" onChange={handleChange} value={formData.note}  />
+            <Stack spacing={1}>
+              <Typography>Ngày nhận hàng</Typography>
+              <input type="date" name="harvestAt" style={dateStyle} label="Ngày nhận hàng" onChange={handleChange} value={fDate(formData.harvestAt, "yyyy-MM-dd")} />
+            </Stack>
+            <Stack direction={'row'} spacing={2}>
+              <Typography variant="body1" width={200}>
+                Trạng thái
+              </Typography>
+              <Select width={200} name="status" value={formData.status} onChange={handleChange}>
+                <MenuItem value={'IDLE'}>IDLE</MenuItem>
+                <MenuItem value={'PROCESS'}>PROCESS</MenuItem>
+                <MenuItem value={'DONE'}>DONE</MenuItem>
+                <MenuItem value={'REJECT'}>REJECT</MenuItem>
+              </Select>
+            </Stack>
+          </Stack>
+          <DialogActions>
+            <Button variant="contained" color="inherit" onClick={handleCloseDetail}>
+              Hủy
+            </Button>
+            <Button variant="contained" color="info" onClick={updatePurchaseOrder}>
+              Cập nhật
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
+}
+
+function getStatusColor(status) {
+  switch (status) {
+    case 'IDLE':
+      return 'info';
+    case 'PROCESS':
+      return 'secondary';
+    case 'DONE':
+      return 'success';
+    case 'REJECT':
+      return 'error';
+    default:
+      return 'default';
+  }
 }

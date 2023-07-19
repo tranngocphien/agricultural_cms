@@ -6,23 +6,28 @@ import SvgColor from '../../../components/svg-color';
 const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
 
 const navConfig = [
+  // {
+  //   title: 'Thống kê',
+  //   path: '/dashboard/app',
+  //   icon: icon('ic_analytics'),
+  // },
   {
-    title: 'dashboard',
-    path: '/dashboard/app',
-    icon: icon('ic_analytics'),
-  },
-  {
-    title: 'user',
+    title: 'Người dùng',
     path: '/dashboard/user',
     icon: icon('ic_user'),
   },
   {
-    title: 'product',
+    title: 'Nhà cung cấp',
+    path: '/dashboard/supplier',
+    icon: icon('ic_user'),
+  },
+  {
+    title: 'Sản phẩm',
     path: '/dashboard/products',
     icon: icon('ic_product'),
   },
   {
-    title: 'supplier product',
+    title: 'Sản phẩm cung cấp',
     path: '/dashboard/supplierProducts',
     icon: icon('ic_supplier_product'),
   },

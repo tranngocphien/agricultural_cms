@@ -23,10 +23,6 @@ export default function ProductsPage() {
 
   return (
     <>
-      <Helmet>
-        <title> Dashboard: Products </title>
-      </Helmet>
-
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" >
           <Typography variant="h4" sx={{ mb: 5 }}>
