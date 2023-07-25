@@ -73,6 +73,8 @@ function applySortFilter(array, comparator, query) {
 export default function OrderPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const [totalOrder, setTotalOrder] = useState(10);
+
   const [newsStatus, setNewsStatus] = useState('IDLE');
 
   const [openDetail, setOpenDetail] = useState(false);
@@ -113,17 +115,33 @@ export default function OrderPage() {
     axios.get(`/api/admin/orders?page=${page}&size=${rowsPerPage}`).then((response) => {
       setOrders(response.data.data);
       setSelectedOrder(response.data.data[0]);
+      setTotalOrder(response.data.paginationInfo.totalElement);
       console.log(response);
     });
   }, []);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = async (event, newPage) => {
     setPage(newPage);
+    console.log(newPage);
+    axios.get(`/api/admin/orders?page=${newPage}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      setSelectedOrder(response.data.data[0]);
+      console.log(response);
+    });
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleChangeRowsPerPage = async (event) => {
+    console.log(event);
     setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(event.target.value);
+  
+    console.log(`/api/admin/orders?page=${page}&size=${rowsPerPage}`);
+    axios.get(`/api/admin/orders?page=${page}&size=${event.target.value}`).then((response) => {
+      setOrders(response.data.data);
+      setSelectedOrder(response.data.data[0]);
+      console.log(response);
+    });
+    console.log(orders);
   };
 
   const handleFilterByName = (event) => {
@@ -142,7 +160,7 @@ export default function OrderPage() {
       axios
         .post('/api/orders/updateStatus', {
           id: selectedOrder.id,
-          status: newsStatus
+          status: newsStatus,
         })
         .then((response) => {
           console.log(response.data);
@@ -154,16 +172,17 @@ export default function OrderPage() {
         });
     } catch (error) {
       console.log(error);
-    } 
+    }
   };
 
   const reloadOrders = async () => {
+    console.log(`/api/admin/orders?page=${page}&size=${rowsPerPage}`);
     axios.get(`/api/admin/orders?page=${page}&size=${rowsPerPage}`).then((response) => {
       setOrders(response.data.data);
       setSelectedOrder(response.data.data[0]);
       console.log(response);
     });
-  }
+  };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage) : 0;
 
@@ -254,9 +273,8 @@ export default function OrderPage() {
           </Scrollbar>
 
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={orders.length}
+            count={totalOrder}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -372,7 +390,7 @@ export default function OrderPage() {
             <Button variant="contained" color="inherit" onClick={handleCloseDetail}>
               Hủy
             </Button>
-            <Button variant="contained" color="info" onClick = {updateStatus}>
+            <Button variant="contained" color="info" onClick={updateStatus}>
               Cập nhật
             </Button>
           </DialogActions>

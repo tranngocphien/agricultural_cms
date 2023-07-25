@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
-import { Box, Card, Link, Typography, Stack } from '@mui/material';
+import { Box, Card, Link, Button, Typography, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import {formatImageUrl} from '../../../utils/formatUrl';
-import {formatCurrency} from "../../../utils/formatNumber";
+import Label from '../../../components/label';
+import { formatImageUrl } from '../../../utils/formatUrl';
+import { formatCurrency } from '../../../utils/formatNumber';
 
 const StyledProductImg = styled('img')({
   top: 0,
@@ -22,30 +23,42 @@ ShopProductCard.propTypes = {
 export default function ShopProductCard({ product }) {
   const navigate = useNavigate();
 
-  const { name, price, images } = product;
+  const { name, price, images, stock, sku } = product;
   const handleClick = () => {
     navigate('/dashboard/products/update', {
       state: { product },
     });
   };
 
+  const handleForecast = () => {
+    navigate('/dashboard/products/forecast', {
+      state: { product },
+    });
+  };
+
   return (
-    <Card onClick={handleClick}>
-      <Box sx={{ pt: '100%', position: 'relative' }}>
-        <StyledProductImg alt={name} src={formatImageUrl(images[0])} />
-      </Box>
+    <Stack spacing={2}>
+      <Card onClick={handleClick}>
+        <Box sx={{ pt: '100%', position: 'relative' }}>
+          <StyledProductImg alt={name} src={formatImageUrl(images[0])} />
+        </Box>
 
-      <Stack spacing={2} sx={{ p: 3 }}>
-        <Link color="inherit" underline="hover">
-          <Typography variant="subtitle2" noWrap>
-            {name}
-          </Typography>
-        </Link>
+        <Stack spacing={2} sx={{ p: 3 }}>
+          <Link color="inherit" underline="hover">
+            <Typography variant="subtitle2" noWrap>
+              {name}
+            </Typography>
+            <Label color="info">{`${stock} ${sku}`}</Label>
+          </Link>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="subtitle1">{formatCurrency(price)}</Typography>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" alignContent="center">
+            <Typography variant="subtitle1">{formatCurrency(price)}</Typography>
+          </Stack>
         </Stack>
-      </Stack>
-    </Card>
+      </Card>
+      <Button variant="contained" onClick={handleForecast}>
+        Dự báo
+      </Button>
+    </Stack>
   );
 }

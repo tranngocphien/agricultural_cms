@@ -1,16 +1,11 @@
-import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 import {
   Card,
   Table,
   Stack,
   Paper,
-  Button,
-  Popover,
   TableRow,
-  MenuItem,
   TableBody,
   TableCell,
   Container,
@@ -18,7 +13,6 @@ import {
   TableContainer,
   TablePagination,
 } from '@mui/material';
-import Iconify from '../components/iconify';
 import Label from '../components/label';
 import Scrollbar from '../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
@@ -124,15 +118,11 @@ export default function UserPage() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Người dùng
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
         </Stack>
 
         <Card>
-          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>

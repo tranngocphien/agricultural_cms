@@ -15,6 +15,7 @@ import SupplierProductDetailPage from './pages/supplier_product/SupplierProductD
 import DashboardAppPage from './pages/DashboardAppPage';
 import CreateProductPage from './pages/product/CreateProductPage';
 import UpdateProductPage from './pages/product/UpdateProductPage';
+import ForecastProductPage from './pages/product/ForecastProductPage';
 import PurchaseOrderPage from './pages/purchase_order/PurchaseOrderPage';
 
 // ----------------------------------------------------------------------
@@ -41,6 +42,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'products/create', element: <CreateProductPage /> },
         { path: 'products/update', element: <UpdateProductPage /> },
+        { path: 'products/forecast', element: <ForecastProductPage /> },
       ],
     },
     {

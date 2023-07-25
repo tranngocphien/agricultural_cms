@@ -137,6 +137,7 @@ export default function PurchaseOrderPage() {
     formData.amount = order.amount;
     formData.price = order.price;
     formData.note = order.note;
+    formData.status = order.status;
     formData.harvestAt = order.harvestAt;
     setOpenDetail(true);
   };

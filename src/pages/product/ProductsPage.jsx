@@ -26,11 +26,11 @@ export default function ProductsPage() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" >
           <Typography variant="h4" sx={{ mb: 5 }}>
-            Products
+            Danh sách sản phẩm
           </Typography>
           <Button variant="contained" sx={{ mb: 5 }} onClick={() => {
                 navigate('/dashboard/products/create',);
-          }} >Create New Product</Button>
+          }} >Tạo sản phẩm mới</Button>
         </Stack>
         <ProductList products={products} />
       </Container>
