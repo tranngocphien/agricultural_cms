@@ -33,6 +33,7 @@ const StyledContent = styled('div')(({ theme }) => ({
   margin: 'auto',
   minHeight: '100vh',
   display: 'flex',
+  color: 'white',
   justifyContent: 'center',
   flexDirection: 'column',
   padding: theme.spacing(12, 0),
@@ -45,25 +46,14 @@ export default function LoginPage() {
 
   return (
     <>
-      <Helmet>
-        <title> Login | Minimal UI </title>
-      </Helmet>
-
       <StyledRoot>
-        <Logo
-          sx={{
-            position: 'fixed',
-            top: { xs: 16, sm: 24, md: 40 },
-            left: { xs: 16, sm: 24, md: 40 },
-          }}
-        />
 
         {mdUp && (
           <StyledSection>
             <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
               Chào bạn
             </Typography>
-            <img src="/assets/illustrations/illustration_login.png" alt="login" />
+            <img src="/assets/images/welcome.jpg" alt="login" />
           </StyledSection>
         )}
 

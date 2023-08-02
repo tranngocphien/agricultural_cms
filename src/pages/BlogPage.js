@@ -20,9 +20,6 @@ const SORT_OPTIONS = [
 export default function BlogPage() {
   return (
     <>
-      <Helmet>
-        <title> Dashboard: Blog | Minimal UI </title>
-      </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>

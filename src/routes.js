@@ -12,7 +12,6 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/product/ProductsPage';
 import SupplierProductsPage from './pages/supplier_product/SupplierProductPage';
 import SupplierProductDetailPage from './pages/supplier_product/SupplierProductDetail';
-import DashboardAppPage from './pages/DashboardAppPage';
 import CreateProductPage from './pages/product/CreateProductPage';
 import UpdateProductPage from './pages/product/UpdateProductPage';
 import ForecastProductPage from './pages/product/ForecastProductPage';
@@ -30,8 +29,7 @@ export default function Router() {
       path: '/dashboard',
       element: <DashboardLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: <DashboardAppPage /> },
+        { element: <Navigate to="/dashboard/user" />, index: true },
         { path: 'user', element: <UserPage /> },
         { path: 'supplier', element: <SupplierPage/>},
         { path: 'products', element: <ProductsPage /> },

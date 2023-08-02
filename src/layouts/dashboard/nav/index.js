@@ -53,9 +53,10 @@ export default function Nav({ openNav, onCloseNav }) {
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
       }}
     >
-      <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
-        FRUITS
-      </Box>
+      <Stack direction="row" alignContent="center" alignItems="center" spacing={2}>
+        <img src="/assets/images/icon.png" alt="login" style={{ width: 100, height: 100 }} />
+        <Typography variant='h5'>AGRISHOP</Typography>
+      </Stack>
 
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">

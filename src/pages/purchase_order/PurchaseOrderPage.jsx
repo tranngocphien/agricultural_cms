@@ -1,11 +1,9 @@
-import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import {
   Card,
   Table,
   Stack,
   Paper,
-  Popover,
   TableRow,
   MenuItem,
   TableBody,
@@ -20,16 +18,17 @@ import {
   Button,
   Dialog,
   ImageList,
+  DialogContent,
+  DialogContentText,
   ImageListItem,
   DialogActions,
   DialogTitle,
 } from '@mui/material';
-import Iconify from '../../components/iconify';
 import Label from '../../components/label';
 import Scrollbar from '../../components/scrollbar';
 import { formatCurrency } from '../../utils/formatNumber';
 import { fDateTime, fDate  } from '../../utils/formatTime';
-import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
+import { UserListToolbar } from '../../sections/@dashboard/user';
 import axios from '../../data/httpCommon';
 import { formatImageUrl } from '../../utils/formatUrl';
 
@@ -49,50 +48,20 @@ const TABLE_HEAD = [
   { id: 'amount', label: 'Số lượng', alignRight: false },
   { id: 'status', label: 'Trạng thái', alignRight: false },
   { id: 'harvestDay', label: 'Ngày nhận', alignRight: false },
-  { id: 'preice', label: 'Giá', alignRight: false },
+  { id: 'price', label: 'Giá', alignRight: false },
+  { id: 'detail', label: '', alignRight: false },
+  { id: 'delete', label: '', alignRight: false },
 ];
 
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function applySortFilter(array, comparator, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }
-  return stabilizedThis.map((el) => el[0]);
-}
 
 export default function PurchaseOrderPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [openDetail, setOpenDetail] = useState(false);
 
-  const [open, setOpen] = useState(null);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const [page, setPage] = useState(0);
-
-  const [order, setOrder] = useState('asc');
-
-  const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
 
@@ -117,18 +86,8 @@ export default function PurchaseOrderPage() {
     setOpenDetail(false);
   };
 
-  const handleOpenMenu = (event) => {
-    setOpen(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setOpen(null);
-  };
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
   };
 
   const handleDetailOrder = (event, order) => {
@@ -140,6 +99,11 @@ export default function PurchaseOrderPage() {
     formData.status = order.status;
     formData.harvestAt = order.harvestAt;
     setOpenDetail(true);
+  };
+
+  const handleDelete = (event, order) => {
+    setSelectedOrder(order);
+    setOpenDelete(true);
   };
 
   useEffect(() => {
@@ -173,6 +137,23 @@ export default function PurchaseOrderPage() {
     });
   }
 
+  const deletePurchaseOrder = async () => {
+    try {
+      axios
+        .delete(`/api/purchase-orders/delete/${selectedOrder.id}`)
+        .then((response) => {
+          console.log(response.data);
+          setOpenDelete(false);
+          reloadOrders();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    } 
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -188,10 +169,6 @@ export default function PurchaseOrderPage() {
   };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage) : 0;
-
-  const filteredUsers = applySortFilter(orders, getComparator(order, orderBy), filterName);
-
-  const isNotFound = !filteredUsers.length && !!filterName;
 
   return (
     <>
@@ -213,7 +190,6 @@ export default function PurchaseOrderPage() {
                       <TableCell
                         key={headCell.id}
                         align={headCell.alignRight ? 'right' : 'left'}
-                        sortDirection={orderBy === headCell.id ? order : false}
                       >
                         {headCell.label}
                       </TableCell>
@@ -240,6 +216,9 @@ export default function PurchaseOrderPage() {
                         <TableCell align="left" onClick={(event) => handleDetailOrder(event, row)}>
                           <Label color="info">Chi tiết</Label>
                         </TableCell>
+                        <TableCell align="left" onClick={(event) => handleDelete(event, row)}>
+                          <Label color="error">Xóa</Label>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -250,7 +229,7 @@ export default function PurchaseOrderPage() {
                   )}
                 </TableBody>
 
-                {isNotFound && (
+                {false && (
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
@@ -288,6 +267,26 @@ export default function PurchaseOrderPage() {
           />
         </Card>
       </Container>
+
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{'Bạn có chắc chắn muốn xóa đơn hàng này không?'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Bạn không thể hoàn tác sau khi ấn xác nhận.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>Hủy</Button>
+          <Button onClick={deletePurchaseOrder} autoFocus>
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {orders.length > 0 && selectedOrder != null && (
         <Dialog open={openDetail} onClose={handleCloseDetail} fullWidth="true">

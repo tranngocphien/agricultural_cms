@@ -44,6 +44,7 @@
     "@iconify/react": "^4.1.0",
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.11.10",
+    "@mui/x-charts": "^6.0.0-alpha.4",
     "@mui/x-date-pickers": "^6.10.0",
     "apexcharts": "^3.37.0",
     "axios": "^1.4.0",
