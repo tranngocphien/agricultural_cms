@@ -3,7 +3,6 @@ import { Navigate, useRoutes } from 'react-router-dom';
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
-import BlogPage from './pages/BlogPage';
 import UserPage from './pages/UserPage';
 import SupplierPage from './pages/supplier/SupplierPage';
 import OrderPage from './pages/order/OrderPage';
@@ -37,7 +36,6 @@ export default function Router() {
         { path: 'purchaseOrders', element: <PurchaseOrderPage /> },
         { path: 'supplierProducts', element: <SupplierProductsPage /> },
         { path: 'supplierProducts/detail', element: <SupplierProductDetailPage /> },
-        { path: 'blog', element: <BlogPage /> },
         { path: 'products/create', element: <CreateProductPage /> },
         { path: 'products/update', element: <UpdateProductPage /> },
         { path: 'products/forecast', element: <ForecastProductPage /> },
