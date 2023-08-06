@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // create a new axios instance
 const instance = axios.create({
-  baseURL: 'http://https://agri-api.estatekey.click',
+  baseURL: 'https://agri-api.estatekey.click',
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin" : "*"
