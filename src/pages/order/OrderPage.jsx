@@ -200,7 +200,6 @@ export default function OrderPage() {
         </Stack>
 
         <Card>
-          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>

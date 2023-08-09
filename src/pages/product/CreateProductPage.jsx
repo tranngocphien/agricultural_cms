@@ -10,6 +10,7 @@ import {
   Stack,
   Button,
   Select,
+  CircularProgress,
   MenuItem,
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
@@ -17,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../../data/httpCommon';
 
 export default function CreateProductPage() {
+  const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [certificateImages, setCertificateImages] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -42,6 +44,7 @@ export default function CreateProductPage() {
   };
 
   const createNewProduct = async (event) => {
+    setLoading(true);
     const imageFormData = new FormData();
     for (let i = 0; i < images.length; i += 1) {
       imageFormData.append('files', images[i]);
@@ -57,13 +60,15 @@ export default function CreateProductPage() {
         console.log(response.data);
         formData.images = response.data.data;
         axios
-        .post('/api/products/create', formData)
-        .then((response) => {
-          console.log(response.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+          .post('/api/products/create', formData)
+          .then((response) => {
+            setLoading(false);
+            console.log(response.data);
+          })
+          .catch((error) => {
+            setLoading(false);
+            console.log(error);
+          });
       });
   };
 
@@ -73,14 +78,12 @@ export default function CreateProductPage() {
       for (let i = 0; i < certificateImages.length; i += 1) {
         imageFormData.append('files', certificateImages[i]);
       }
-      const response = await axios
-      .post('/api/images/upload', imageFormData, {
+      const response = await axios.post('/api/images/upload', imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       formData.certificateImages = response.data.data;
-
     } catch (error) {
       console.log(error);
     }
@@ -120,9 +123,15 @@ export default function CreateProductPage() {
 
   return (
     <Stack spacing={2}>
+      {loading && (
+        <Stack direction="row" alignItems="center" alignContent="center" justifyContent="center">
+          <CircularProgress />
+        </Stack>
+      )}
       <Typography variant="h4" gutterBottom>
         Tạo sản phẩm mới
       </Typography>
+
       <Stack spacing={2}>
         <TextField name="name" label="Tên sản phẩm" onChange={handleChange} />
         <Stack direction="row" spacing={2}>
@@ -175,7 +184,7 @@ export default function CreateProductPage() {
             <ImageList sx={{ width: 450, height: 450 }} cols={2} rowHeight={164}>
               {images.map((item) => (
                 <ImageListItem>
-                  <img src={URL.createObjectURL(item)} alt=""  style={{width: 200, height: 200}} />
+                  <img src={URL.createObjectURL(item)} alt="" style={{ width: 200, height: 200 }} />
                 </ImageListItem>
               ))}
             </ImageList>
@@ -193,10 +202,10 @@ export default function CreateProductPage() {
         </Stack>
         <Button
           variant="contained"
-          onClick={() => {
-            createNewProduct();
+          onClick={async () => {
+            await createNewProduct();
             navigate(-1, {
-              replace: true
+              replace: true,
             });
           }}
         >

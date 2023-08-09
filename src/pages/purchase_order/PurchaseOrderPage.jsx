@@ -180,7 +180,6 @@ export default function PurchaseOrderPage() {
         </Stack>
 
         <Card>
-          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>

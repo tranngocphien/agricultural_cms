@@ -3,7 +3,7 @@ import { useState, useEffect  } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // @mui
-import { Container, Stack, Typography, Button, Box } from '@mui/material';
+import { Container, Stack, Typography, Button, TextField } from '@mui/material';
 // components
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../../sections/@dashboard/products';
 import axios from '../../data/httpCommon';
@@ -15,11 +15,22 @@ export default function ProductsPage() {
 
   useEffect(() => {
     axios
-      .get("/api/products")
+      .get("/api/products?page=0&size=50")
       .then((response) => {
         setProducts(response.data.data);
       } );
   }, []);
+
+  const searchProduct = (event) => {
+    axios
+      .get(`/api/products/search?keyword=${event.target.value}`)
+      .then((response) => {
+        setProducts(response.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   return (
     <>
@@ -32,6 +43,10 @@ export default function ProductsPage() {
                 navigate('/dashboard/products/create',);
           }} >Tạo sản phẩm mới</Button>
         </Stack>
+        <TextField id="outlined-basic" fullWidth label="Tìm kiếm sản phẩm" variant="outlined" onChange={(e) => {
+          searchProduct(e);
+        }}/>
+        <div style={{height : 16}}/>
         <ProductList products={products} />
       </Container>
     </>

@@ -9,6 +9,7 @@ import {
   Stack,
   Button,
   Select,
+  CircularProgress,
   MenuItem,
 } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
@@ -23,6 +24,7 @@ import axios from '../../data/httpCommon';
 
 export default function UpdateProductPage() {
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -65,14 +67,25 @@ export default function UpdateProductPage() {
   };
 
   const updateProduct = async (event) => {
-    await uploadCertificateImages();
-    await uploadImageProduct();
+    setLoading(true);
+    if (newImages.length > 0) {
+      await uploadImageProduct();
+    } else {
+      formData.images = images;
+    }
+    if (newCertificateImages.length > 0) {
+      await uploadCertificateImages();
+    } else {
+      formData.certificateImages = certificateImages;
+    }
     axios
       .post('/api/products/update', formData)
       .then((response) => {
+        setLoading(false);
         console.log(response.data);
       })
       .catch((error) => {
+        setLoading(false);
         console.log(error);
       });
   };
@@ -83,8 +96,7 @@ export default function UpdateProductPage() {
       for (let i = 0; i < newCertificateImages.length; i += 1) {
         imageFormData.append('files', newCertificateImages[i]);
       }
-      const response = await axios
-      .post('/api/images/upload', imageFormData, {
+      const response = await axios.post('/api/images/upload', imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -101,14 +113,12 @@ export default function UpdateProductPage() {
       for (let i = 0; i < newImages.length; i += 1) {
         imageFormData.append('files', newImages[i]);
       }
-      const response = await axios
-      .post('/api/images/upload', imageFormData, {
+      const response = await axios.post('/api/images/upload', imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       formData.images = images.concat(response.data.data);
-
     } catch (error) {
       console.log(error);
     }
@@ -122,6 +132,7 @@ export default function UpdateProductPage() {
         navigate(-1);
       })
       .catch((error) => {
+        alert('Không thể xóa sản phẩm này');
         console.log(error);
       });
   };
@@ -164,6 +175,12 @@ export default function UpdateProductPage() {
     });
   };
 
+  const deleteCertificateImageByIndex = (index) => {
+    setCertificateImages((certificateImages) => {
+      return certificateImages.filter((_, i) => i !== index);
+    });
+  };
+
   const deleteNewImageByIndex = (index) => {
     setNewImages((newImages) => {
       return newImages.filter((_, i) => i !== index);
@@ -179,6 +196,9 @@ export default function UpdateProductPage() {
   return (
     <div>
       <Stack spacing={2}>
+        { loading && <Stack direction="row" alignItems="center" alignContent="center" justifyContent="center">
+          <CircularProgress />
+        </Stack>}
         <Stack direction="row" justifyContent={'space-between'}>
           <Typography variant="h4" gutterBottom>
             Thông tin sản phẩm
@@ -279,10 +299,10 @@ export default function UpdateProductPage() {
             </Box>
             <Box sx={{ width: 1000, height: 500, border: '1px dashed grey', borderRadius: 4, padding: 2 }}>
               <input accept="image/" type="file" multiple onChange={handleUploadCertificateImage} />
-              {certificateImages.map((item) => (
+              {certificateImages.map((item, index) => (
                 <ImageListItem>
                   <div>
-                    <Button>Xóa</Button>
+                    <Button onClick={() => deleteCertificateImageByIndex(index)}>Xóa</Button>
                     <img src={formatImageUrl(item)} alt="" style={{ width: 150, height: 100 }} />
                   </div>
                 </ImageListItem>
