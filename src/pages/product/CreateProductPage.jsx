@@ -49,27 +49,22 @@ export default function CreateProductPage() {
     for (let i = 0; i < images.length; i += 1) {
       imageFormData.append('files', images[i]);
     }
-    await uploadCertificateImages();
+    if(certificateImages.length > 0) {
+      await uploadCertificateImages();
+    }
+    if(images.length > 0) {
+      await uploadImages();
+    }
     axios
-      .post('/api/images/upload', imageFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-        formData.images = response.data.data;
-        axios
-          .post('/api/products/create', formData)
-          .then((response) => {
-            setLoading(false);
-            console.log(response.data);
-          })
-          .catch((error) => {
-            setLoading(false);
-            console.log(error);
-          });
-      });
+    .post('/api/products/create', formData)
+    .then((response) => {
+      setLoading(false);
+      console.log(response.data);
+    })
+    .catch((error) => {
+      setLoading(false);
+      console.log(error);
+    });
   };
 
   const uploadCertificateImages = async () => {
@@ -84,6 +79,23 @@ export default function CreateProductPage() {
         },
       });
       formData.certificateImages = response.data.data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const uploadImages = async () => {
+    try {
+      const imageFormData = new FormData();
+      for (let i = 0; i < images.length; i += 1) {
+        imageFormData.append('files', images[i]);
+      }
+      const response = await axios.post('/api/images/upload', imageFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      formData.images = response.data.data;
     } catch (error) {
       console.log(error);
     }
@@ -205,8 +217,8 @@ export default function CreateProductPage() {
           onClick={async () => {
             await createNewProduct();
             navigate(-1, {
-              replace: true,
-            });
+              replace: true
+            } );
           }}
         >
           Tạo sản phẩm
