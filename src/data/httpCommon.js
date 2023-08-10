@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // create a new axios instance
 const instance = axios.create({
-  baseURL: 'http://192.168.0.105:8080',
+  baseURL: 'https://agri-api.estatekey.click',
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin" : "*"

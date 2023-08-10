@@ -108,7 +108,7 @@ export default function SupplierProductDetailPage() {
                 Giá mong muốn
               </Typography>
               <Typography variant="body1" width={200}>
-                {`${formatCurrency(product.expectedPrice)}/${product.sku}`}
+                {`${formatCurrency(product.expectedPrice)}`}
               </Typography>
             </Stack>
             <Stack direction="row" alignContent="baseline">

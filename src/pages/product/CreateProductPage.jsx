@@ -187,7 +187,7 @@ export default function CreateProductPage() {
             </Select>
           </FormControl>
         </Stack>
-        <TextField name="location" label="Địa điểm" onChange={handleChange} />
+        <TextField name="location" label="Nguồn gốc xuất xứ" onChange={handleChange} />
         <TextField name="preservation" fullWidth multiline rows={3} label="Cách bảo quản" onChange={handleChange} />
         <TextField name="description" fullWidth multiline rows={5} label="Mô tả" onChange={handleChange} />
         <Stack direction="row" spacing={2} justifyContent={'space-between'}>

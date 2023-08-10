@@ -250,7 +250,7 @@ export default function UpdateProductPage() {
               </Select>
             </FormControl>
           </Stack>
-          <TextField name="location" label="Địa điểm" onChange={handleChange} value={formData.location} />
+          <TextField name="location" label="Nguồn gốc xuất xứ" onChange={handleChange} value={formData.location} />
           <TextField
             name="preservation"
             fullWidth
