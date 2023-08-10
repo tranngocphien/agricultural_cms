@@ -69,6 +69,8 @@ export default function PurchaseOrderPage() {
 
   const [orders, setOrders] = useState([]);
 
+  const [totalOrder, setTotalOrder] = useState(10);
+
   const [formData, setFormData] = useState({
     id: 0,
     price: 0,
@@ -109,6 +111,7 @@ export default function PurchaseOrderPage() {
   useEffect(() => {
     axios.get(`/api/admin/purchaseOrders?page=${page}&size=${rowsPerPage}`).then((response) => {
       setOrders(response.data.data);
+      setTotalOrder(response.data.paginationInfo.totalElement);
       console.log(response);
     });
   }, []);
@@ -156,11 +159,21 @@ export default function PurchaseOrderPage() {
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+
+    axios.get(`/api/admin/purchaseOrders?page=${newPage}&size=${rowsPerPage}`).then((response) => {
+      setOrders(response.data.data);
+      console.log(response);
+    });
   };
 
   const handleChangeRowsPerPage = (event) => {
     setPage(0);
     setRowsPerPage(parseInt(event.target.value, 10));
+
+    axios.get(`/api/admin/purchaseOrders?page=${page}&size=${event.target.value}`).then((response) => {
+      setOrders(response.data.data);
+      console.log(response);
+    });
   };
 
   const handleFilterByName = (event) => {
@@ -258,7 +271,7 @@ export default function PurchaseOrderPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={orders.length}
+            count={totalOrder}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

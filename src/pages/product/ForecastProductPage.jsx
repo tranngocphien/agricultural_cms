@@ -89,7 +89,7 @@ export default function ForecastProductPage() {
 
         {monthlyValue.length > 0 && monthlyLabel.length > 0 && (
           <LineChart
-            width={60*(monthlyValue.length)}
+            width={80*(monthlyValue.length)}
             height={300}
             series={[{ type: 'line', data: monthlyValue }]}
             xAxis={[{ scaleType: 'point', data: monthlyLabel }]}
